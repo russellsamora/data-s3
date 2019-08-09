@@ -1,41 +1,41 @@
-# easy-S3
+# data-S3
 Simple interface to deal with data on s3 built on top of the Node AWS SDK. 
 
 ### Installation
-`npm install easy-s3`
+`npm install data-s3`
 
 ### Usage
 
 ```javascript
 require('dotenv').config();
-const easyS3 = require('easy-s3');
+const dataS3 = require('data-s3');
 
 const accessKeyId = process.env.AWS_KEY;
 const secretAccessKey = process.env.AWS_SECRET;
 
 // initialize
-easyS3.init({ accessKeyId, secretAccessKey });
+dataS3.init({ accessKeyId, secretAccessKey });
 
 // upload data
 const data = [{ a: 1, b: 'x' }, { a: 2, b: 'y' }];
-const result = await easyS3.upload({ bucket: 'bucket-name', file: 'test.csv', data });
+const result = await dataS3.upload({ bucket: 'bucket-name', file: 'test.csv', data });
 console.log(result);
 
 // download data
-const data = await easyS3.download({ bucket: 'bucket-name', file: 'test.csv' });
+const data = await dataS3.download({ bucket: 'bucket-name', file: 'test.csv' });
 console.log(data);
 ```
 
 ### API
-#### easyS3.init([options])
+#### dataS3.init([options])
 - `accessKeyId` **required**
 - `secretAccessKey` **required**
 
-#### easyS3.upload([options])
+#### dataS3.upload([options])
 - `bucket` **required**
 - `file` **required**
 
-#### easyS3.download([options])
+#### dataS3.download([options])
 - `bucket` **required**
 - `file` **required**
 - `data` **required**
