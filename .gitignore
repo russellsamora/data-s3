@@ -1,0 +1,12 @@
+# Misc
+.DS_Store
+.tmp
+.vscode
+.env
+
+# Node build artifacts
+node_modules
+npm-debug.log
+
+# Local development
+test.js

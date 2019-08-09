@@ -1,0 +1,26 @@
+{
+	"name": "data-s3",
+	"version": "1.0.0",
+	"description": "aws sdk s3 wrapper for data",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node index.js"
+	},
+	"keywords": [
+		"node",
+		"aws",
+		"s3",
+		"easy",
+		"data",
+		"download",
+		"upload"
+	],
+	"author": "russell goldenberg",
+	"license": "MIT",
+	"dependencies": {
+		"aws-sdk": "2.506.0",
+		"d3-dsv": "1.1.1",
+		"dotenv": "8.0.0"
+	}
+}
