@@ -27,18 +27,18 @@ console.log(data);
 ```
 
 ### API
-#### dataS3.init([options])
-- `accessKeyId` **required**
-- `secretAccessKey` **required**
+All functions (except `init` can we used with async/await or as Promises).
 
-#### dataS3.upload([options])
-- `bucket` **required**
-- `file` **required**
+#### dataS3.init({ accessKeyId, secretAccessKey })
 
-#### dataS3.download([options])
-- `bucket` **required**
-- `file` **required**
-- `data` **required**
+#### dataS3.upload({ bucket, file })
+Returns `"success"`.
+
+#### dataS3.download({ bucket, file, data })
+Returns data in `array` or `object` format.
+
+#### dataS3.exists({ bucket, file })
+Returns `true` or `false`.
 
 ### Contributors 
 * [russellgoldenberg](https://github.com/russellgoldenberg)
