@@ -6,7 +6,7 @@ Simple interface to deal with data on s3 built on top of the Node AWS SDK.
 
 ### Usage
 
-```javascript
+```js
 require('dotenv').config();
 const dataS3 = require('data-s3');
 
@@ -17,28 +17,41 @@ const secretAccessKey = process.env.AWS_SECRET;
 dataS3.init({ accessKeyId, secretAccessKey });
 
 // upload data
-const data = [{ a: 1, b: 'x' }, { a: 2, b: 'y' }];
-const result = await dataS3.upload({ bucket: 'bucket-name', file: 'test.csv', data });
-console.log(result);
+try {
+  const data = [{ a: 1, b: 'x' }, { a: 2, b: 'y' }];
+  const result = await dataS3.upload({ bucket: 'bucket-name', file: 'test.csv', data });
+  console.log(result);
+} catch (err) {
+  console.log(err);
+}
 
 // download data
-const data = await dataS3.download({ bucket: 'bucket-name', file: 'test.csv' });
-console.log(data);
+try {
+  const data = await dataS3.download({ bucket: 'bucket-name', file: 'test.csv' });
+  console.log(data);
+} catch (err) {
+  console.log(err)
+}
 ```
 
 ### API
-All functions (except `init` can we used with async/await or as Promises).
+All methods (except `init`) can be as either async/await or thenable promises).
 
-#### dataS3.init({ accessKeyId, secretAccessKey })
+<a name="init" href="#init">#</a> *dataS3*.**init**({ accessKeyId, secretAccessKey })
 
-#### dataS3.upload({ bucket, file })
-Returns `"success"`.
+Initialize the AWS S3 config credentials.
 
-#### dataS3.download({ bucket, file, data })
-Returns data in `array` or `object` format.
+<a name="upload" href="#upload">#</a> *dataS3*.**upload**({ bucket, file, data })
 
-#### dataS3.exists({ bucket, file })
-Returns `true` or `false`.
+Uploads some data to a specific bucket path and filename (eg. file.csv). Returns "success" on completion.
+
+<a name="download" href="#download">#</a> *dataS3*.**download**({ bucket, file })
+
+Downloads a specific file from a bucket path. Returns the data, parsed.
+
+<a name="exists" href="#exists">#</a> *dataS3*.**exists**({ bucket, file })
+
+Checks to see if a file from a bucket path exists. Returns `true` or `false`.
 
 ### Contributors 
 * [russellgoldenberg](https://github.com/russellgoldenberg)
