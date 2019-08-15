@@ -7,11 +7,10 @@ Simple interface to deal with data on s3 built on top of the Node AWS SDK.
 ### Usage
 
 ```js
-require('dotenv').config();
 const dataS3 = require('data-s3');
 
-const accessKeyId = process.env.AWS_KEY;
-const secretAccessKey = process.env.AWS_SECRET;
+const accessKeyId = 'your aws key';
+const secretAccessKey = 'your aws secret';
 
 // initialize
 dataS3.init({ accessKeyId, secretAccessKey });
