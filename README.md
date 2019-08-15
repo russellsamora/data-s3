@@ -29,7 +29,7 @@ try {
   const data = await dataS3.download({ bucket: 'bucket-name', file: 'test.csv' });
   console.log(data);
 } catch (err) {
-  console.log(err)
+  console.log(err);
 }
 
 // file exists check
@@ -37,7 +37,7 @@ try {
   const exists = await dataS3.exists({ bucket: 'bucket-name', file: 'test.csv' });
   console.log(exists);
 } catch (err) {
-  console.log(err)
+  console.log(err);
 }
 ```
 
