@@ -42,7 +42,7 @@ try {
 ```
 
 ### API
-All methods (except `init`) can be as either async/await or thenable promises).
+All methods (except `init`) can be either async/await or thenable promises).
 
 <a name="init" href="#init">#</a> *dataS3*.**init**({ accessKeyId, secretAccessKey })
 
