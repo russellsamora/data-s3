@@ -4,6 +4,11 @@ Simple interface to deal with data on s3 built on top of the Node AWS SDK.
 ### Installation
 `npm install data-s3`
 
+### Supported Data Formats
+* **JSON**
+* **CSV**
+* **TSV**
+
 ### Usage
 
 ```js
