@@ -18,7 +18,7 @@ const accessKeyId = 'your aws key';
 const secretAccessKey = 'your aws secret';
 
 // initialize
-dataS3.init({ accessKeyId, secretAccessKey });
+dataS3.init({ accessKeyId, secretAccessKey, region });
 
 // upload data
 try {
@@ -49,9 +49,9 @@ try {
 ### API
 All methods (except `init`) can be either async/await or thenable promises).
 
-<a name="init" href="#init">#</a> *dataS3*.**init**({ accessKeyId, secretAccessKey })
+<a name="init" href="#init">#</a> *dataS3*.**init**({ accessKeyId, secretAccessKey, required })
 
-Initialize the AWS S3 config credentials.
+Initialize the AWS S3 config credentials. All parameters are required.
 
 <a name="upload" href="#upload">#</a> *dataS3*.**upload**({ bucket, file, data })
 

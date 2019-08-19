@@ -139,9 +139,11 @@ async function exists({ bucket, file }) {
 	}
 }
 
-function init({ accessKeyId, secretAccessKey }) {
-	AWS.config.update({ accessKeyId, secretAccessKey });
-	configured = true;
+function init({ accessKeyId, secretAccessKey, region }) {
+	if (accessKeyId && secretAccessKey && region) {
+		AWS.config.update({ accessKeyId, secretAccessKey, region });
+		configured = true;
+	} else console.log('data-s3 init: missing parameters');
 }
 
 module.exports = { init, upload, download, exists };
