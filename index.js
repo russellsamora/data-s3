@@ -101,7 +101,6 @@ function listS3(params) {
 	});
 }
 
-
 // public
 async function upload({ bucket, path = '', file, data }) {
 	if (!configured) return Promise.reject('data-s3 not intialized');
@@ -151,7 +150,6 @@ async function exists({ bucket, path = '', file }) {
 			Key: file
 		};
 
-		console.log(params);
 		const e = await existsS3(params);
 		return Promise.resolve(e);
 	} catch (err) {
