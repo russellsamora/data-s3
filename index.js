@@ -45,6 +45,12 @@ function parse({ buffer, format }) {
 	}
 }
 
+function trimSlash(str) {
+	const s = str.startsWith('/');
+	const e = str.endsWith('/');
+	return str.substring(s ? 1 : 0).slice(0, e ? -1 : str.length);
+}
+
 function uploadS3(params) {
 	return new Promise((resolve, reject) => {
 		s3.upload(params, (err, data) => {
@@ -83,8 +89,21 @@ function existsS3(params) {
 	});
 }
 
+function listS3(params) {
+	return new Promise((resolve, reject) => {
+		s3.listObjectsV2(params, (err, resp) => {
+			if (err && err.statusCode === 404) resolve(false);
+			else if (resp) {
+				const files = resp.Contents.map(d => d.Key.replace(`${params.Prefix}/` ,'')).filter(d => d);
+				resolve(files);
+			}	else reject('error listing files');
+		});
+	});
+}
+
+
 // public
-async function upload({ bucket, file, data }) {
+async function upload({ bucket, path = '', file, data }) {
 	if (!configured) return Promise.reject('data-s3 not intialized');
 	if (!bucket || !file || !data) return Promise.reject('missing parameters');
 
@@ -93,7 +112,7 @@ async function upload({ bucket, file, data }) {
 		const body = await stringify({ data, format });
 
 		const params = {
-			Bucket: bucket,
+			Bucket: `${bucket}/${trimSlash(path)}`,
 			Body: body,
 			Key: file
 		};
@@ -105,13 +124,13 @@ async function upload({ bucket, file, data }) {
 	}
 }
 
-async function download({ bucket, file }) {
+async function download({ bucket, path = '', file }) {
 	if (!configured) return Promise.reject('data-s3 not intialized');
 	if (!bucket || !file) return Promise.reject('missing parameters');
 
 	try {	
 		const params = {
-			Bucket: bucket,
+			Bucket: `${bucket}/${trimSlash(path)}`,
 			Key: file
 		};
 
@@ -122,18 +141,36 @@ async function download({ bucket, file }) {
 	}
 }
 
-async function exists({ bucket, file }) {
+async function exists({ bucket, path = '', file }) {
 	try {
 		if (!configured) return Promise.reject('data-s3 not intialized');
 		if (!bucket || !file) return Promise.reject('missing parameters');
-
+		
 		const params = {
-			Bucket: bucket,
+			Bucket: `${bucket}/${trimSlash(path)}`,
 			Key: file
 		};
 
+		console.log(params);
 		const e = await existsS3(params);
 		return Promise.resolve(e);
+	} catch (err) {
+		return Promise.reject(err);
+	}
+}
+
+async function list({ bucket, path = '' }) {
+	try {
+		if (!configured) return Promise.reject('data-s3 not intialized');
+		if (!bucket) return Promise.reject('missing parameters');
+
+		const params = {
+			Bucket: bucket,
+			Prefix: trimSlash(path)
+		};
+
+		const l = await listS3(params);
+		return Promise.resolve(l);
 	} catch (err) {
 		return Promise.reject(err);
 	}
@@ -146,4 +183,4 @@ function init({ accessKeyId, secretAccessKey, region }) {
 	} else console.log('data-s3 init: missing parameters');
 }
 
-module.exports = { init, upload, download, exists };
+module.exports = { init, upload, download, exists, list };
