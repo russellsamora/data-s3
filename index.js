@@ -1,8 +1,7 @@
 const AWS = require('aws-sdk');
 const dsv = require('d3-dsv');
 
-const s3 = new AWS.S3();
-let configured = false;
+let s3 = null;
 
 // private
 function getFormat(file) {
@@ -103,7 +102,7 @@ function listS3(params) {
 
 // public
 async function upload({ bucket, path = '', file, data }) {
-	if (!configured) return Promise.reject('data-s3 not intialized');
+	if (!s3) return Promise.reject('data-s3 not intialized');
 	if (!bucket || !file || !data) return Promise.reject('missing parameters');
 
 	try {
@@ -124,7 +123,7 @@ async function upload({ bucket, path = '', file, data }) {
 }
 
 async function download({ bucket, path = '', file }) {
-	if (!configured) return Promise.reject('data-s3 not intialized');
+	if (!s3) return Promise.reject('data-s3 not intialized');
 	if (!bucket || !file) return Promise.reject('missing parameters');
 
 	try {	
@@ -142,7 +141,7 @@ async function download({ bucket, path = '', file }) {
 
 async function exists({ bucket, path = '', file }) {
 	try {
-		if (!configured) return Promise.reject('data-s3 not intialized');
+		if (!s3) return Promise.reject('data-s3 not intialized');
 		if (!bucket || !file) return Promise.reject('missing parameters');
 		
 		const params = {
@@ -159,7 +158,7 @@ async function exists({ bucket, path = '', file }) {
 
 async function list({ bucket, path = '' }) {
 	try {
-		if (!configured) return Promise.reject('data-s3 not intialized');
+		if (!s3) return Promise.reject('data-s3 not intialized');
 		if (!bucket) return Promise.reject('missing parameters');
 
 		const params = {
@@ -175,10 +174,9 @@ async function list({ bucket, path = '' }) {
 }
 
 function init({ accessKeyId, secretAccessKey, region }) {
-	if (accessKeyId && secretAccessKey && region) {
-		AWS.config.update({ accessKeyId, secretAccessKey, region });
-		configured = true;
-	} else console.log('data-s3 init: missing parameters');
+	const hasParams = accessKeyId && secretAccessKey && region;
+	if (hasParams) s3 = new AWS.S3({ accessKeyId, secretAccessKey, region });
+	else console.log('data-s3 init: missing parameters');
 }
 
 module.exports = { init, upload, download, exists, list };
