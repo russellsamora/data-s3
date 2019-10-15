@@ -1,6 +1,6 @@
 {
 	"name": "data-s3",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"description": "aws sdk s3 wrapper for data",
 	"main": "index.js",
 	"scripts": {
