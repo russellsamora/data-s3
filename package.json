@@ -19,7 +19,7 @@
 	"author": "russell samora",
 	"license": "MIT",
 	"dependencies": {
-		"aws-sdk": "2.548.0",
+		"aws-sdk": "2.814.0",
 		"d3-dsv": "1.1.1"
 	},
 	"devDependencies": {
