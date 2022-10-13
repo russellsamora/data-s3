@@ -78,13 +78,13 @@ Checks to see if a file from a bucket path exists. Returns `true` or `false`.
 Lists the files in a bucket directory. Returns an array of filenames.
 
 ### Contributors 
-* [russellgoldenberg](https://github.com/russellgoldenberg)
+* [russellsamora](https://github.com/russellsamora)
 
 ### License
 
 MIT License
 
-Copyright (c) 2019 Russell Goldenberg
+Copyright (c) 2022 Russell Goldenberg
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

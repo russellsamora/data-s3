@@ -93,9 +93,9 @@ function listS3(params) {
 		s3.listObjectsV2(params, (err, resp) => {
 			if (err && err.statusCode === 404) resolve(false);
 			else if (resp) {
-				const files = resp.Contents.map(d => d.Key.replace(`${params.Prefix}/` ,'')).filter(d => d);
+				const files = resp.Contents.map(d => d.Key.replace(`${params.Prefix}/`, '')).filter(d => d);
 				resolve(files);
-			}	else reject('error listing files');
+			} else reject('error listing files');
 		});
 	});
 }
@@ -126,7 +126,7 @@ async function download({ bucket, path = '', file }) {
 	if (!s3) return Promise.reject('data-s3 not intialized');
 	if (!bucket || !file) return Promise.reject('missing parameters');
 
-	try {	
+	try {
 		const params = {
 			Bucket: `${bucket}/${trimSlash(path)}`,
 			Key: file
@@ -143,7 +143,7 @@ async function exists({ bucket, path = '', file }) {
 	try {
 		if (!s3) return Promise.reject('data-s3 not intialized');
 		if (!bucket || !file) return Promise.reject('missing parameters');
-		
+
 		const params = {
 			Bucket: `${bucket}/${trimSlash(path)}`,
 			Key: file

@@ -16,7 +16,7 @@
 		"download",
 		"upload"
 	],
-	"author": "russell goldenberg",
+	"author": "russell samora",
 	"license": "MIT",
 	"dependencies": {
 		"aws-sdk": "2.548.0",
