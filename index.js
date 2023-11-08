@@ -1,5 +1,11 @@
-const AWS = require("aws-sdk");
-const dsv = require("d3-dsv");
+import {
+  S3Client,
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  ListObjectsV2Command,
+} from "@aws-sdk/client-s3";
+import * as dsv from "d3-dsv";
 
 let s3 = null;
 
@@ -10,38 +16,49 @@ function getFormat(file) {
     const s = file.split(".");
     if (s.length) {
       const f = s.pop();
-      if (supported.includes(f)) return Promise.resolve(f);
-      return Promise.reject(`unsupported format: ${f}`);
+      if (supported.includes(f)) return f;
+      throw new Error(`unsupported format: ${f}`);
     }
-    return Promise.reject("no extension in filename");
+    throw new Error("no extension in filename");
   } catch (err) {
-    return Promise.reject(err.message);
+    throw err;
   }
 }
 
-function stringify({ data, format }) {
+async function stringify({ data, format }) {
   try {
     let output = null;
     if (format === "csv") output = dsv.csvFormat(data);
     if (format === "tsv") output = dsv.tsvFormat(data);
     if (format === "json") output = JSON.stringify(data);
     if (format === "txt") output = data;
-    return Promise.resolve(output);
+    return output;
   } catch (err) {
-    return Promise.reject(`issue stringifying data as a ${format}`);
+    throw new Error(`issue stringifying data as a ${format}`);
   }
 }
 
-function parse({ buffer, format }) {
+async function streamToBuffer(stream) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
+  });
+}
+
+async function parse({ stream, format }) {
   try {
+    const buffer = await streamToBuffer(stream);
     const str = buffer.toString("utf8");
     let output = null;
     if (format === "csv") output = dsv.csvParse(str);
     if (format === "tsv") output = dsv.tsvParse(str);
     if (format === "json") output = JSON.parse(str);
-    return Promise.resolve(output);
+    if (format === "txt") output = str;
+    return output;
   } catch (err) {
-    return Promise.reject(`issue parsing data as a ${format}`);
+    throw new Error(`issue parsing data as a ${format}`);
   }
 }
 
@@ -51,135 +68,103 @@ function trimSlash(str) {
   return str.substring(s ? 1 : 0).slice(0, e ? -1 : str.length);
 }
 
-function uploadS3(params) {
-  return new Promise((resolve, reject) => {
-    s3.upload(params, (err, data) => {
-      if (err) reject(`${err.statusCode} ${err.message}`);
-      else if (data) resolve("success");
-      else reject("no data");
-    });
-  });
-}
-
-function downloadS3(params) {
-  return new Promise((resolve, reject) => {
-    s3.getObject(params, async (err, resp) => {
-      if (err) reject(`${err.statusCode} ${err.message}`);
-      else if (resp) {
-        try {
-          const format = await getFormat(params.Key);
-          const buffer = resp.Body;
-          const data = await parse({ buffer, format });
-          resolve(data);
-        } catch (err) {
-          reject(err);
-        }
-      } else reject("no response");
-    });
-  });
-}
-
-function existsS3(params) {
-  return new Promise((resolve, reject) => {
-    s3.headObject(params, (err, resp) => {
-      if (err && err.statusCode === 404) resolve(false);
-      else if (resp) resolve(true);
-      else reject("error fetching file");
-    });
-  });
-}
-
-function listS3(params) {
-  return new Promise((resolve, reject) => {
-    s3.listObjectsV2(params, (err, resp) => {
-      if (err && err.statusCode === 404) resolve(false);
-      else if (resp) {
-        const files = resp.Contents.map((d) =>
-          d.Key.replace(`${params.Prefix}/`, "")
-        ).filter((d) => d);
-        resolve(files);
-      } else reject("error listing files");
-    });
-  });
-}
-
 // public
 async function upload({ bucket, path = "", file, data }) {
-  if (!s3) return Promise.reject("data-s3 not intialized");
-  if (!bucket || !file || !data) return Promise.reject("missing parameters");
+  if (!s3) throw new Error("data-s3 not intialized");
+  if (!bucket || !file || !data) throw new Error("missing parameters");
 
   try {
     const format = await getFormat(file);
     const body = await stringify({ data, format });
 
     const params = {
-      Bucket: `${bucket}/${trimSlash(path)}`,
+      Bucket: `${bucket}`,
       Body: body,
-      Key: file,
+      Key: `${trimSlash(path)}/${file}`,
     };
 
-    const result = await uploadS3(params);
-    return Promise.resolve(result);
+    await s3.send(new PutObjectCommand(params));
+    return true;
   } catch (err) {
-    return Promise.reject(err);
+    throw err;
   }
 }
 
 async function download({ bucket, path = "", file }) {
-  if (!s3) return Promise.reject("data-s3 not intialized");
-  if (!bucket || !file) return Promise.reject("missing parameters");
+  if (!s3) throw new Error("data-s3 not intialized");
+  if (!bucket || !file) throw new Error("missing parameters");
 
   try {
     const params = {
-      Bucket: `${bucket}/${trimSlash(path)}`,
-      Key: file,
+      Bucket: bucket,
+      Key: `${trimSlash(path)}/${file}`,
     };
 
-    const result = await downloadS3(params);
-    return Promise.resolve(result);
+    const { Body } = await s3.send(new GetObjectCommand(params));
+    const stream = Body;
+    const format = await getFormat(params.Key);
+    const data = await parse({ stream, format });
+    return data;
   } catch (err) {
-    return Promise.reject(err);
+    throw err;
   }
 }
 
 async function exists({ bucket, path = "", file }) {
   try {
-    if (!s3) return Promise.reject("data-s3 not intialized");
-    if (!bucket || !file) return Promise.reject("missing parameters");
+    if (!s3) throw new Error("data-s3 not intialized");
+    if (!bucket || !file) throw new Error("missing parameters");
 
     const params = {
-      Bucket: `${bucket}/${trimSlash(path)}`,
-      Key: file,
+      Bucket: `${bucket}`,
+      Key: `${trimSlash(path)}/${file}`,
     };
 
-    const e = await existsS3(params);
-    return Promise.resolve(e);
+    await s3.send(new HeadObjectCommand(params));
+    return true;
   } catch (err) {
-    return Promise.reject(err);
+    if (err.name === "NotFound") {
+      return false;
+    } else {
+      throw err;
+    }
   }
 }
 
 async function list({ bucket, path = "" }) {
   try {
-    if (!s3) return Promise.reject("data-s3 not intialized");
-    if (!bucket) return Promise.reject("missing parameters");
+    if (!s3) throw new Error("data-s3 not intialized");
+    if (!bucket) throw new Error("missing parameters");
 
     const params = {
       Bucket: bucket,
       Prefix: trimSlash(path),
     };
 
-    const l = await listS3(params);
-    return Promise.resolve(l);
+    const data = await s3.send(new ListObjectsV2Command(params));
+    const files = data.Contents.map((d) =>
+      d.Key.replace(`${params.Prefix}/`, "")
+    ).filter((d) => d);
+    return files;
   } catch (err) {
-    return Promise.reject(err);
+    throw err;
   }
 }
 
-function init({ accessKeyId, secretAccessKey, region }) {
+async function init({ accessKeyId, secretAccessKey, region }) {
   const hasParams = accessKeyId && secretAccessKey && region;
-  if (hasParams) s3 = new AWS.S3({ accessKeyId, secretAccessKey, region });
-  else console.log("data-s3 init: missing parameters");
+  if (!region) throw new Error("data-s3 init: missing region");
+  if (!accessKeyId || !secretAccessKey)
+    throw new Error("data-s3 init: missing credentials");
+  else {
+    const credentials = {
+      accessKeyId,
+      secretAccessKey,
+    };
+
+    s3 = new S3Client({ region, credentials });
+  }
+  return;
 }
 
-module.exports = { init, upload, download, exists, list };
+export default { init, upload, download, exists, list };

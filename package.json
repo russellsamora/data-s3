@@ -4,7 +4,7 @@
   "description": "aws sdk s3 wrapper for data",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node test.js",
     "start": "node index.js"
   },
   "keywords": [
@@ -18,8 +18,12 @@
   ],
   "author": "russell samora",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
-    "aws-sdk": "2.1490.0",
-    "d3-dsv": "3.0.1"
+    "@aws-sdk/client-s3": "^3.445.0",
+    "d3-dsv": "^3.0.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1"
   }
 }
